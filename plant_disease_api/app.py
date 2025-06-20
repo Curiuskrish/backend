@@ -16,7 +16,22 @@ app = Flask(__name__)
 CORS(app)
 
 # Load the TensorFlow model
-model = tf.keras.models.load_model("models/plant_disease_recog_model_pwp.keras")
+import gdown
+
+# Model download path
+model_path = "models/plant_disease_recog_model_pwp.keras"
+model_drive_url = "https://drive.google.com/uc?id=YOUR_FILE_ID&confirm=t"  # ⬅️ Replace with your actual file ID
+
+# Ensure model is downloaded
+if not os.path.exists(model_path):
+    print("🔽 Downloading model from Google Drive...")
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    gdown.download(model_drive_url, output=model_path, quiet=False)
+    print("✅ Model downloaded successfully!")
+
+# Load the model
+model = tf.keras.models.load_model(model_path)
+
 
 # Load label data
 with open("data/plant_disease.json", "r") as file:
