@@ -6,6 +6,7 @@ from PIL import Image
 import io
 import json
 import os
+import gdown  # Make sure this is in requirements.txt
 
 # Setup upload folder
 UPLOAD_FOLDER = "uploadimages"
@@ -15,23 +16,20 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app = Flask(__name__)
 CORS(app)
 
-# Load the TensorFlow model
-import gdown
-
-# Model download path
+# Model paths
 model_path = "models/plant_disease_recog_model_pwp.keras"
-model_drive_url = "https://drive.google.com/file/d/1qDqeP1rHcawATIR4sv3WRULHJUh-FUFO/view?usp=sharing"  # ⬅️ Replace with your actual file ID
+file_id = "1qDqeP1rHcawATIR4sv3WRULHJUh-FUFO"
+gdrive_url = f"https://drive.google.com/uc?id={file_id}"
 
 # Ensure model is downloaded
 if not os.path.exists(model_path):
     print("🔽 Downloading model from Google Drive...")
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
-    gdown.download(model_drive_url, output=model_path, quiet=False)
+    gdown.download(gdrive_url, output=model_path, quiet=False)
     print("✅ Model downloaded successfully!")
 
 # Load the model
 model = tf.keras.models.load_model(model_path)
-
 
 # Load label data
 with open("data/plant_disease.json", "r") as file:
@@ -78,10 +76,7 @@ def predict():
         "confidence": round(confidence, 4)
     })
 
-
-
+# Run the app
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Default to 10000 if not set
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-
