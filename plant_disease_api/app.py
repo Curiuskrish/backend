@@ -20,7 +20,7 @@ import gdown
 
 # Model download path
 model_path = "models/plant_disease_recog_model_pwp.keras"
-model_drive_url = "https://drive.google.com/uc?id=YOUR_FILE_ID&confirm=t"  # ⬅️ Replace with your actual file ID
+model_drive_url = "https://drive.google.com/file/d/1qDqeP1rHcawATIR4sv3WRULHJUh-FUFO/view?usp=sharing"  # ⬅️ Replace with your actual file ID
 
 # Ensure model is downloaded
 if not os.path.exists(model_path):
