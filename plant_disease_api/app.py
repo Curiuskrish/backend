@@ -6,9 +6,8 @@ from PIL import Image
 import io
 import json
 import os
-import uuid
 
-# Create upload directory if it doesn't exist
+# Setup upload folder
 UPLOAD_FOLDER = "uploadimages"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -16,27 +15,27 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app = Flask(__name__)
 CORS(app)
 
-# Load the model
+# Load the TensorFlow model
 model = tf.keras.models.load_model("models/plant_disease_recog_model_pwp.keras")
 
-
-
-# Load labels
+# Load label data
 with open("data/plant_disease.json", "r") as file:
     plant_disease = json.load(file)
 
-# Preprocess the image
+# Preprocess uploaded image
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    img = img.resize((160, 160))  # Match EfficientNet input
+    img = img.resize((160, 160))  # EfficientNet default input size
     img_array = np.array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
+# Health check endpoint
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({"message": "🌿 Plant Disease Recognition API is running."})
 
+# Prediction endpoint
 @app.route("/predict", methods=["POST"])
 def predict():
     if "image" not in request.files:
@@ -45,11 +44,17 @@ def predict():
     image = request.files["image"]
     image_bytes = image.read()
     processed_image = preprocess_image(image_bytes)
+
+    # Predict using model
     prediction = model.predict(processed_image)[0]
     predicted_index = int(np.argmax(prediction))
     confidence = float(np.max(prediction))
 
-    data = plant_disease[str(predicted_index)]
+    data = plant_disease.get(str(predicted_index), {
+        "name": "Unknown",
+        "cause": "Unknown",
+        "cure": "Unknown"
+    })
 
     return jsonify({
         "name": data["name"],
@@ -58,5 +63,6 @@ def predict():
         "confidence": round(confidence, 4)
     })
 
+# Entry point for local development
 if __name__ == "__main__":
     app.run(debug=True)
